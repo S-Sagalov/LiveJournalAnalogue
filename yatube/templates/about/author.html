@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Об авторе проекта{% endblock %}
+{% block content %}
+  <div class="container">
+    <div class="card mt-2 mb-2">
+      <div class="row">
+        <div class="col-md-4">
+          <img src="{% static 'img/fav/author_img.png' %}" width="260" height="400" >
+            <p style="font-size: 8pt">В задании было сказано разместить фото кружки..</p>
+        </div>
+        <div class="col-md-8">
+          <h1>Привет, я автор</h1>
+          <p>
+            Приветствую! Меня зовут Станислав, обучаюсь на курсе «Python-разработчик плюс» от сервиса Яндекс-Практикум.
+            <br>
+            Когда-нибудь я придумаю, что тут можно еще написать. <small style="font-size: 6pt">(но это не точно)..</small>
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
