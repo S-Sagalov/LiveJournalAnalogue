@@ -47,21 +47,7 @@
           </a>
         {% endif %}
 
-
-        {% for comment in comments %}
-          <div class="media mb-4">
-            <div class="media-body">
-              <h5 class="mt-0">
-                <a href="{% url 'posts:profile' comment.author.username %}">
-                  {{ comment.author.username }}
-                </a>
-              </h5>
-              <p>
-                {{ comment.text }}
-              </p>
-            </div>
-          </div>
-        {% endfor %}
+        {% include 'posts/includes/comment_block.html' %}
 
         {% if user.is_authenticated %}
           <div class="card my-4">

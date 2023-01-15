@@ -136,43 +136,7 @@ class PostsPagesTests(TestCase):
         self.assertEqual(response.context.get('comments')[0].text,
                          self.comment.text)
 
-    def test_followin_sistem(self):
-        """Тест подписок и отписок"""
-        follow_count_start = Follow.objects.filter(
-            user_id=self.user.id).count()
-        client2 = Client()
-        user2 = User.objects.create_user('Random_user2')
-        client2.force_login(user2)
-
-        self.authorized_client.get(reverse('posts:profile_follow', kwargs={
-            'username': user2.username}))
-        follow_count_current = Follow.objects.filter(
-            user_id=self.user.id).count()
-        self.assertEqual(follow_count_current, follow_count_start + 1)
-
-        self.authorized_client.get(reverse('posts:profile_unfollow', kwargs={
-            'username': user2.username}))
-        follow_count_current = Follow.objects.filter(
-            user_id=self.user.id).count()
-        self.assertEqual(follow_count_current, follow_count_start)
-
-    def test_following_post_show_correct_users(self):
-        user2 = User.objects.create_user('Random_user2')
-        user3 = User.objects.create_user('Random_user3')
-        client2 = Client()
-        client3 = Client()
-        client2.force_login(user2)
-        client3.force_login(user3)
-
-        client2.get(reverse('posts:profile_follow',
-                            kwargs={'username': self.user.username}))
-        response = client2.get(reverse('posts:follow_index'))
-        self.assertNotEqual(len(response.context['page_obj']), 0)
-
-        response = client3.get(reverse('posts:follow_index'))
-        self.assertEqual(len(response.context['page_obj']), 0)
-
-    def test_chache(self):
+    def test_cache(self):
         """Тестирование кэша"""
         response = self.authorized_client.get(self.reversed_urls['index'])
         content1 = response.content
@@ -200,7 +164,12 @@ class PaginatorTest(TestCase):
             [Post(author=cls.user, group=cls.group, text=f'Пост{i}') for i in
              range(cls.POSTS_COUNT)])
 
-    def paginator_test(self):
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
+    def test_paginator(self):
         """Тестирование паджинатора"""
         addresses = (
             reverse('posts:index'),
@@ -218,3 +187,63 @@ class PaginatorTest(TestCase):
                 address + '?page=2')
             self.assertEqual(len(response.context['page_obj']),
                              last_page_posts_count)
+
+
+class FollowTest(TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.author = User.objects.create_user('author')
+        cls.follower = User.objects.create_user('follower')
+        cls.not_follower = User.objects.create_user('not_follower')
+
+        cls.author_client = Client()
+        cls.follower_client = Client()
+        cls.not_follower_client = Client()
+
+        cls.author_client.force_login(cls.author)
+        cls.follower_client.force_login(cls.follower)
+        cls.not_follower_client.force_login(cls.not_follower)
+
+        cls.post = Post.objects.create(
+            author=cls.author,
+            text='Пост',
+        )
+        Follow.objects.create(author=cls.author, user=cls.follower)
+
+    @classmethod
+    def tearDownClass(cls):
+        super().tearDownClass()
+        shutil.rmtree(TEMP_MEDIA_ROOT, ignore_errors=True)
+
+    def test_follow(self):
+        follow_count_start = Follow.objects.filter(
+            user_id=self.not_follower.id).count()
+        self.not_follower_client.get(reverse('posts:profile_follow', kwargs={
+            'username': self.author.username}))
+        follow_count_current = Follow.objects.filter(
+            user_id=self.not_follower.id).count()
+        self.assertEqual(follow_count_current, follow_count_start + 1)
+
+    def test_unfollow(self):
+        follow_count_start = Follow.objects.filter(
+            user_id=self.follower.id).count()
+        self.follower_client.get(reverse('posts:profile_follow', kwargs={
+            'username': self.author.username}))
+        follow_count_current = Follow.objects.filter(
+            user_id=self.not_follower.id).count()
+        self.assertEqual(follow_count_current, follow_count_start - 1)
+
+    def test_posts_show_following_users(self):
+        Follow.objects.get_or_create(author=self.author, user=self.follower)
+        Post.objects.create(author=self.author, text='Random_text')
+        response = self.follower_client.get(reverse('posts:follow_index'))
+        self.assertNotEqual(len(response.context.get('page_obj')), 0)
+
+    def test_posts_dont_show_unfollowing_users(self):
+        Post.objects.create(author=self.author, text='Random_text')
+        obj = Follow.objects.filter(author=self.author, user=self.not_follower)
+        if obj.exists():
+            obj.delete()
+        response = self.not_follower_client.get(reverse('posts:follow_index'))
+        self.assertEqual(len(response.context.get('page_obj')), 0)

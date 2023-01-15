@@ -105,12 +105,18 @@ class PostCreateFormTests(TestCase):
         self.assertEqual(self.post.comments.count(), comments_count + 1)
         comment = self.post.comments.first()
         self.assertEqual(comment.text, form_data['text'])
+        self.assertEqual(comment.author, self.user)
+        self.assertEqual(comment.post, self.post)
 
     def test_not_authorized_client_cat_create_comment(self):
         """Не авторизованный пользователь НЕ может оставить коммент"""
         comments_count = self.post.comments.count()
         form_data = {'text': 'коммент'}
-        self.anonim_client.post(
+        response = self.anonim_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.pk}),
             data=form_data, follow=True)
         self.assertEqual(self.post.comments.count(), comments_count)
+        self.assertRedirects(
+            response, f'''{reverse("users:login")}?next={
+            reverse("posts:add_comment",
+                    kwargs={"post_id": self.post.pk})}''')

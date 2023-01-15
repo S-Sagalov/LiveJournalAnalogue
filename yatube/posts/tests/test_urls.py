@@ -54,8 +54,8 @@ class PostsURLTests(TestCase):
         redirect_addresses = {
             self.urls['post_create']: f'{reverse("users:login")}?next='
                                       f'{reverse("posts:post_create")}',
-            self.urls['post_edit']:
-                reverse('posts:post_detail', kwargs={'post_id': self.post.pk}),
+            self.urls['post_edit']: f'''{reverse("users:login")}?next={reverse(
+                "posts:post_edit", kwargs={"post_id": self.post.pk})}''',
         }
         for address, redirect_address in redirect_addresses.items():
             with self.subTest(address=address):
