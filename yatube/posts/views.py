@@ -109,8 +109,6 @@ def add_comment(request, post_id):
 def follow_index(request):
     template = 'posts/follow.html'
     posts = Post.objects.filter(author__following__user=request.user)
-    # Вот это очень круто! Интуитивно понял, но нужно будет ещё покопаться и
-    # Почитать, чтоб окончательно осознать, как этим пользоваться. Спасибо!)
     page_obj = paginate(request, posts)
     context = {'page_obj': page_obj}
     return render(request, template, context)

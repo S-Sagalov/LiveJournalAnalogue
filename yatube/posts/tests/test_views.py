@@ -228,7 +228,7 @@ class FollowTest(TestCase):
     def test_unfollow(self):
         follow_count_start = Follow.objects.filter(
             user_id=self.follower.id).count()
-        self.follower_client.get(reverse('posts:profile_follow', kwargs={
+        self.follower_client.get(reverse('posts:profile_unfollow', kwargs={
             'username': self.author.username}))
         follow_count_current = Follow.objects.filter(
             user_id=self.not_follower.id).count()
@@ -236,14 +236,17 @@ class FollowTest(TestCase):
 
     def test_posts_show_following_users(self):
         Follow.objects.get_or_create(author=self.author, user=self.follower)
-        Post.objects.create(author=self.author, text='Random_text')
+        post_text = 'Random_text'
+        Post.objects.create(author=self.author, text=post_text)
         response = self.follower_client.get(reverse('posts:follow_index'))
         self.assertNotEqual(len(response.context.get('page_obj')), 0)
+        follow = Follow.objects.get(author=self.author, user=self.follower)
+        self.assertEqual(follow.user, self.follower)
+        self.assertEqual(follow.author, self.author)
+        post = response.context['page_obj'][0]
+        self.assertEqual(post.text, post_text)
 
     def test_posts_dont_show_unfollowing_users(self):
         Post.objects.create(author=self.author, text='Random_text')
-        obj = Follow.objects.filter(author=self.author, user=self.not_follower)
-        if obj.exists():
-            obj.delete()
         response = self.not_follower_client.get(reverse('posts:follow_index'))
         self.assertEqual(len(response.context.get('page_obj')), 0)

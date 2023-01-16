@@ -19,7 +19,6 @@ class GroupAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ('post', 'author', 'text')
     search_fields = ('text',)
-    list_filter = ('pub_date',)
 
 
 class FollowAdmin(admin.ModelAdmin):
@@ -29,5 +28,5 @@ class FollowAdmin(admin.ModelAdmin):
 
 admin.site.register(Post, PostAdmin)
 admin.site.register(Group, GroupAdmin)
-admin.site.register(Comment)
-admin.site.register(Follow)
+admin.site.register(Comment, CommentAdmin)
+admin.site.register(Follow, FollowAdmin)
