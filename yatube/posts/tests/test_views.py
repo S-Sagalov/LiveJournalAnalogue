@@ -209,7 +209,6 @@ class FollowTest(TestCase):
             author=cls.author,
             text='Пост',
         )
-        Follow.objects.create(author=cls.author, user=cls.follower)
 
     @classmethod
     def tearDownClass(cls):
@@ -226,6 +225,7 @@ class FollowTest(TestCase):
         self.assertEqual(follow_count_current, follow_count_start + 1)
 
     def test_unfollow(self):
+        Follow.objects.create(author=self.author, user=self.follower)
         follow_count_start = Follow.objects.filter(
             user_id=self.follower.id).count()
         self.follower_client.get(reverse('posts:profile_unfollow', kwargs={
