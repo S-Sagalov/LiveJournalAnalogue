@@ -12,23 +12,26 @@
 <details>
 <summary>Запуск проекта</summary>
 
-1) Клонировать репозиторий и перейти в папку c проектом;
-2) Создать и активировать виртуальное окружение:
+1) Клонировать репозиторий;
+    ```
+    git clone git@github.com:S-Sagalov/LiveJournalAnalogue.git   
+    ```
+2) Создать и активировать виртуальное окружение;
     ```
         python3 -m venv venv
         source venv/scripts/activate
     ```
-3) Установить зависимости из файла requirements.txt:
+3) Установить зависимости из файла requirements.txt;
 
     ```
     python3 -m pip install --upgrade pip
     pip install -r requirements.txt
     ```
-4) Перейти в папку "yatube"
+4) Перейти в папку "yatube";
     ```
     cd yatube
     ```
-5) Выполнить команду 
+5) Выполнить команду;
     ```
     python manage.py runserver
     ```
